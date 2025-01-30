@@ -1,4 +1,4 @@
-FROM hashicorp/tfc-agent:1.17.6
+FROM hashicorp/tfc-agent:1.18.0
 
 # tfc-agent image doesn't have sudo or su, so we need to switch users using Docker.
 USER root
