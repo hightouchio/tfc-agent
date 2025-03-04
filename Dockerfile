@@ -11,7 +11,7 @@ RUN set -ex \
   && aws --version
 
 RUN set -ex \
-  && curl -fsSL --compressed -o /tmp/kubectl "https://dl.k8s.io/release/v1.31.6/bin/linux/arm64/kubectl" \
+  && curl -fsSL --compressed -o /tmp/kubectl "https://dl.k8s.io/release/v1.31.6/bin/linux/amd64/kubectl" \
   && chmod +x /tmp/kubectl \
   && mv /tmp/kubectl /usr/local/bin/kubectl \
   && kubectl version --client
