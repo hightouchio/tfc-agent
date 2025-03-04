@@ -10,5 +10,11 @@ RUN set -ex \
   && rm -rf /tmp/awscliv2.zip /tmp/aws \
   && aws --version
 
+RUN set -ex \
+  && curl -fsSL --compressed -o /tmp/kubectl "https://dl.k8s.io/release/v1.32.2/bin/linux/arm64/kubectl" \
+  && chmod +x /tmp/kubectl \
+  && mv /tmp/kubectl /usr/local/bin/kubectl \
+  && kubectl version --client
+
 # Switch back to the regular user.
 USER tfc-agent
