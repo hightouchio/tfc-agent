@@ -40,6 +40,7 @@ RUN set -ex \
   && apt-get update \
   && apt-get install -y --no-install-recommends \
     buildah \
+    crun \
     fuse-overlayfs \
     uidmap \
   && rm -rf /var/lib/apt/lists/*
