@@ -1,6 +1,6 @@
 # Spacelift explicitly does not version their runner image
 # https://docs.spacelift.io/integrations/docker#standard-runner-image
-FROM public.ecr.aws/spacelift/runner-terraform:latest
+FROM public.ecr.aws/spacelift/runner-terraform:v2.5.0
 
 # tfc-agent image doesn't have sudo or su, so we need to switch users using Docker.
 USER root
