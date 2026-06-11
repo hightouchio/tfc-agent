@@ -1,7 +1,7 @@
 name: Build tfc-agent
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "andrew/spacelift-image"]
 
 env:
   REGISTRY: ghcr.io
@@ -11,7 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image_name: ["tfc-agent", "spacelift"]
+        # TODO: Re-enable
+#        image_name: ["tfc-agent", "spacelift"]
+        image_name: ["spacelift"]
 
     permissions:
       contents: read
