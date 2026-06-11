@@ -1,4 +1,3 @@
-# Spacelift explicitly does not version their runner image
 # https://docs.spacelift.io/integrations/docker#standard-runner-image
 FROM public.ecr.aws/spacelift/runner-terraform:v2.5.0
 
