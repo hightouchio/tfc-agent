@@ -5,47 +5,39 @@ FROM public.ecr.aws/spacelift/runner-terraform:v2.5.0
 # Spacelift runner image doesn't have sudo or su, so we need to switch users using Docker.
 USER root
 
-RUN set -ex \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends \
+# Base dependencies
+RUN set -ex && apk update \
+  && apk add --no-cache \
     curl \
     gnupg \
-    unzip \
-  && rm -rf /var/lib/apt/lists/*
-
-RUN set -ex \
-  && curl -fsSL --compressed -o /tmp/awscliv2.zip 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip' \
-  && unzip -q /tmp/awscliv2.zip -d /tmp \
-  && /tmp/aws/install \
-  && rm -rf /tmp/awscliv2.zip /tmp/aws \
-  && aws --version
-
-RUN set -ex \
-  && curl -fsSL --compressed -o /tmp/kubectl "https://dl.k8s.io/release/v1.31.6/bin/linux/amd64/kubectl" \
-  && chmod +x /tmp/kubectl \
-  && mv /tmp/kubectl /usr/local/bin/kubectl \
-  && kubectl version --client
-
-# Install GKE auth plugin for kubectl to authenticate with GKE clusters.
-# See https://docs.cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl#install_plugin.
-RUN set -ex \
-  && curl -fsSL --compressed https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
-  && echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends \
-    google-cloud-sdk-gke-gcloud-auth-plugin \
-  && rm -rf /var/lib/apt/lists/* \
-  && gke-gcloud-auth-plugin --version
+    unzip
 
 # Install buildah and related tooling for building container images.
-RUN set -ex \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends \
+RUN set -ex && apk update \
+  && apk add --no-cache \
     buildah \
     crun \
     fuse-overlayfs \
-    uidmap \
-  && rm -rf /var/lib/apt/lists/*
+    shadow-uidmap
+
+# kubectl
+ARG KUBECTL_VERSION="v1.33.12"
+RUN set -ex \
+  && curl -fsSL --compressed -o /tmp/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
+  && chmod +x /tmp/kubectl \
+  && mv /tmp/kubectl /usr/local/bin/kubectl
+RUN kubectl version --client
+
+# AWS CLI
+RUN pip install awscli --break-system-packages
+RUN aws --version
+
+# gcloud CLI
+COPY --from=gcr.io/google.com/cloudsdktool/google-cloud-cli:572.0.0-alpine /google-cloud-sdk /google-cloud-sdk
+ENV PATH=/google-cloud-sdk/bin:$PATH
+# gcloud auth plugin
+RUN gcloud components install gke-gcloud-auth-plugin
+RUN gcloud --version && gke-gcloud-auth-plugin --version
 
 # Switch back to the regular user.
 USER spacelift
