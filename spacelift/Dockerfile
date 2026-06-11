@@ -28,8 +28,21 @@ RUN set -ex \
 RUN kubectl version --client
 
 # AWS CLI
-RUN pip install awscli --break-system-packages
-RUN aws --version
+ARG TARGETOS
+ARG TARGETARCH
+RUN --mount=type=bind,source=./assets/aws-cli.pub,target=/tmp/aws-cli.pub \
+    gpg --import /tmp/aws-cli.pub
+
+RUN if [ "$TARGETARCH" = "amd64" ]; then ARCH="x86_64"; else ARCH="aarch64"; fi \
+      && set -ex \
+      && echo "awscli-exe-${TARGETOS}-${ARCH}.zip.sig" \
+      && curl -fsSL --compressed -o /tmp/awscliv2.zip.sig "https://awscli.amazonaws.com/awscli-exe-${TARGETOS}-${ARCH}.zip.sig" \
+      && curl -fsSL --compressed -o /tmp/awscliv2.zip "https://awscli.amazonaws.com/awscli-exe-${TARGETOS}-${ARCH}.zip" \
+      && gpg --verify /tmp/awscliv2.zip.sig /tmp/awscliv2.zip \
+      && unzip -q /tmp/awscliv2.zip -d /tmp \
+      && /tmp/aws/install --update \
+      && rm -rf /tmp/awscliv2.zip /tmp/aws \
+      && aws --version
 
 # gcloud CLI
 COPY --from=gcr.io/google.com/cloudsdktool/google-cloud-cli:572.0.0-alpine /google-cloud-sdk /google-cloud-sdk
