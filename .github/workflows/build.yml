@@ -21,9 +21,6 @@ jobs:
       attestations: write
       id-token: write
 
-    env:
-      IMAGE_URI: ${{ env.REGISTRY }}/${{github.repository_owner}}/${{ matrix.image_name }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +36,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.IMAGE_URI }}
+          images: ${{ env.REGISTRY }}/${{github.repository_owner}}/${{ matrix.image_name }}
 
       - name: Calculate tag
         run: echo "IMAGE_TAG=$(date -u +'%Y%m%d-%H%M%S')" > "$GITHUB_ENV"
@@ -50,12 +47,12 @@ jobs:
         with:
           context: ./${{ matrix.image_name }}
           push: true
-          tags: ${{ env.IMAGE_URI }}:${{ env.IMAGE_TAG }}
+          tags: ${{ env.REGISTRY }}/${{github.repository_owner}}/${{ matrix.image_name }}:${{ env.IMAGE_TAG }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
-          subject-name: ${{ env.IMAGE_URI }}
+          subject-name: ${{ env.REGISTRY }}/${{github.repository_owner}}/${{ matrix.image_name }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
